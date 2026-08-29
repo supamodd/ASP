@@ -1,0 +1,13 @@
+﻿@page "/Factorial"
+@rendermode InteractiveServer
+
+@using System.Numerics;
+
+<h1>Factorial</h1>
+
+<div class="factorial">
+	<input type="number" min="0" @bind="n" @bind:after="Calculate" />
+	<h3>! = @f</h3>
+</div>
+<button class="btn btn-primary" @onclick="Calculate">Calculate</button>
+
