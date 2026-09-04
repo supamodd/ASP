@@ -1,0 +1,22 @@
+﻿@page "/Fibonacci"
+@rendermode InteractiveServer
+
+@using System.Numerics;
+
+<h1>Fibonacci</h1>
+
+<div class="fibonacci">
+    <label>Количество чисел:</label>
+    <input type="number" min="0" @bind="n" @bind:after="Calculate" />
+    <button class="btn btn-primary" @onclick="Calculate">Calculate</button>
+</div>
+
+@if (sequence.Count > 0)
+{
+    <ul class="fibonacci-list">
+        @for (int i = 0; i < sequence.Count; i++)
+        {
+            <li><span class="index">@(i + 1).</span> @sequence[i]</li>
+        }
+    </ul>
+}

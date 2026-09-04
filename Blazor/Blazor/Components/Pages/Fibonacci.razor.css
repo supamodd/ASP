@@ -1,0 +1,27 @@
+.fibonacci
+{
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+	.fibonacci label
+	{
+		font-size: 18px;
+	}
+	.fibonacci input
+	{
+		font-size: 24px;
+		width: 128px;
+		text-align: right;
+	}
+	.fibonacci-list
+	{
+		font-size: 18px;
+		line-height: 1.7;
+	}
+		.fibonacci-list .index
+		{
+			font-weight: bold;
+			margin-right: 8px;
+		}

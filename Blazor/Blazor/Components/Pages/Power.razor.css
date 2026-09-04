@@ -1,0 +1,20 @@
+.power
+{
+	display: flex;
+	align-items: center;
+}
+	.power h3
+	{
+		margin: 0 16px;
+	}
+	.power input
+	{
+		font-size: 24px;
+		width: 128px;
+		text-align: right;
+	}
+	.power span
+	{
+		font-size: 24px;
+		margin: 0 8px;
+	}
