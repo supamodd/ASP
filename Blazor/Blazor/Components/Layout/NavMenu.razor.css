@@ -11,9 +11,9 @@
     background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") no-repeat center/1.75rem rgba(255, 255, 255, 0.1);
 }
 
-.navbar-toggler:checked {
-    background-color: rgba(255, 255, 255, 0.5);
-}
+    .navbar-toggler:checked {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
 
 .top-row {
     height: 3.5rem;
@@ -45,22 +45,22 @@
 .bi-list-nested-nav-menu {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
 }
-.bi-factorial-nav-menu
-{
-	background-image: url('data:image/svg+xml,<svg role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="m 7.0157956,12 c -0.56859,0 -1.02951,-0.46096 -1.02951,-1.02955 0,-0.56851 0.46092,-1.02942 1.02951,-1.02942 0.56851,0 1.02942,0.46091 1.02942,1.02942 0,0.56859 -0.46091,1.02955 -1.02942,1.02955 z m 1.36029,-8.42977 c -0.0871,0.69397 -0.72628,4.07248 -0.93761,5.18268 -0.039,0.20528 -0.21847,0.3543 -0.42749,0.3543 l -0.008,0 c -0.21643,0 -0.40133,-0.15365 -0.44166,-0.36619 -0.21402,-1.12696 -0.85224,-4.5084 -0.93793,-5.19134 C 5.5202056,2.72725 6.1620856,2 6.9907656,2 c 0.83983,5e-5 1.49023,0.73702 1.3857,1.57023 z" fill="white"/></svg>');
+
+.bi-factorial-nav-menu {
+    background-image: url('data:image/svg+xml,<svg role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="m 7.0157956,12 c -0.56859,0 -1.02951,-0.46096 -1.02951,-1.02955 0,-0.56851 0.46092,-1.02942 1.02951,-1.02942 0.56851,0 1.02942,0.46091 1.02942,1.02942 0,0.56859 -0.46091,1.02955 -1.02942,1.02955 z m 1.36029,-8.42977 c -0.0871,0.69397 -0.72628,4.07248 -0.93761,5.18268 -0.039,0.20528 -0.21847,0.3543 -0.42749,0.3543 l -0.008,0 c -0.21643,0 -0.40133,-0.15365 -0.44166,-0.36619 -0.21402,-1.12696 -0.85224,-4.5084 -0.93793,-5.19134 C 5.5202056,2.72725 6.1620856,2 6.9907656,2 c 0.83983,5e-5 1.49023,0.73702 1.3857,1.57023 z" fill="white"/></svg>');
 }
-.bi-exclamation-nav-menu
-{
-	background-image:url('sun.png');
-	/*background-image:url('calc.ico');*/
+
+.bi-exclamation-nav-menu {
+    background-image: url('sun.png');
+    /*background-image:url('calc.ico');*/
 }
-.bi-power-nav-menu
-{
-	background-image:url('power.svg');
+
+.bi-power-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-lightning-charge-fill' viewBox='0 0 16 16'%3E%3Cpath d='M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z'/%3E%3C/svg%3E");
 }
-.bi-fibonacci-nav-menu
-{
-	background-image:url('fibonacci.svg');
+
+.bi-fibonacci-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-hurricane' viewBox='0 0 16 16'%3E%3Cpath d='M6.999 2.6A5.5 5.5 0 0 1 15 7.5a.5.5 0 0 0 1 0 6.5 6.5 0 1 0-13 0 5 5 0 0 0 6.001 4.9A5.5 5.5 0 0 1 1 7.5a.5.5 0 0 0-1 0 6.5 6.5 0 1 0 13 0 5 5 0 0 0-6.001-4.9M10 7.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0'/%3E%3C/svg%3E");
 }
 
 .nav-item {
@@ -88,15 +88,15 @@
         width: 100%;
     }
 
-.nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
-}
+    .nav-item ::deep a.active {
+        background-color: rgba(255,255,255,0.37);
+        color: white;
+    }
 
-.nav-item ::deep .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
+    .nav-item ::deep .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }
 
 .nav-scrollable {
     display: none;
@@ -114,7 +114,6 @@
     .nav-scrollable {
         /* Never collapse the sidebar for wide screens */
         display: block;
-
         /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
