@@ -54,6 +54,14 @@
 	background-image:url('sun.png');
 	/*background-image:url('calc.ico');*/
 }
+.bi-power-nav-menu
+{
+	background-image:url('power.svg');
+}
+.bi-fibonacci-nav-menu
+{
+	background-image:url('fibonacci.svg');
+}
 
 .nav-item {
     font-size: 0.9rem;
