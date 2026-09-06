@@ -1,0 +1,95 @@
+@page "/converter"
+@rendermode InteractiveServer
+
+<PageTitle>Converter</PageTitle>
+
+<h1><span class="bi-page bi-converter-dark" aria-hidden="true"></span>Converter</h1>
+
+<p class="text-muted">
+    Перевод целых чисел из одной системы счисления в другую: <code>Dec2Bin</code>, <code>Dec2Hex</code>,
+    <code>Bin2Dec</code>, <code>Hex2Dec</code>.
+</p>
+
+<div class="converter-form">
+    <div class="field">
+        <label for="value">Число</label>
+        <input id="value" type="text" autocomplete="off" spellcheck="false" class="form-control"
+               placeholder="@placeholder" @bind="value" @bind:after="Calculate" />
+    </div>
+
+    <div class="field">
+        <label for="direction">Направление</label>
+        <select id="direction" class="form-select" @bind="direction" @bind:after="OnDirectionChanged">
+            @foreach (var d in NumberConverter.Directions)
+            {
+                <option value="@d.Key">@d.Title</option>
+            }
+        </select>
+    </div>
+
+    <button class="btn btn-primary" @onclick="Calculate">Конвертировать</button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger mt-3" role="alert">@error</div>
+}
+else if (!string.IsNullOrEmpty(result))
+{
+    <div class="result mt-3">
+        <div class="line"><span class="base">@FromName</span><code>@Clean</code></div>
+        <div class="line big"><span class="base">@ToName</span><code>@result</code></div>
+    </div>
+
+    <p class="hint">@hint</p>
+
+    @if (breakdown.Count > 0 && breakdown.Count <= 40)
+    {
+        <h4 class="mt-4">Проверка: сумма разрядов результата</h4>
+        <table class="table table-sm table-bordered w-auto">
+            <thead>
+                <tr>
+                    <th>Разряд</th>
+                    <th>Цифра</th>
+                    <th>Вес (@ToBasis<sup>n</sup>)</th>
+                    <th>Вклад</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in breakdown)
+                {
+                    <tr>
+                        <td class="text-muted">@row.Position</td>
+                        <td><code>@row.Digit</code></td>
+                        <td><code>@row.Weight</code></td>
+                        <td><code>@row.Product</code></td>
+                    </tr>
+                }
+                <tr class="table-light">
+                    <td colspan="3"><strong>Итого (десятичное значение)</strong></td>
+                    <td><strong><code>@decimalSum</code></strong></td>
+                </tr>
+            </tbody>
+        </table>
+    }
+    else if (breakdown.Count > 40)
+    {
+        <p class="hint">Разрядов слишком много (@breakdown.Count) - таблица проверки скрыта.</p>
+    }
+}
+
+<h4 class="mt-4">Все четыре функции: одно и то же число</h4>
+<p class="hint">Введённое значение сначала читается в выбранной системе (@FromName),
+    дальше для него считаются все четыре функции конвертера.</p>
+<table class="table table-sm w-auto">
+    <tbody>
+        @foreach (var row in quick)
+        {
+            <tr>
+                <td><code>@row.Name</code></td>
+                <td><code>@row.Value</code></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
