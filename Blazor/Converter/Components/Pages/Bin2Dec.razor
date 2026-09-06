@@ -1,0 +1,14 @@
+@page "/Bin2Dec"
+@page "/bin2dec"
+@rendermode InteractiveServer
+
+<PageTitle>Bin2Dec</PageTitle>
+
+<h1>Bin2Dec</h1>
+
+<div class="converter">
+    <input type="text" @bind="input" @bind:after="Calculate" placeholder="1010" />
+    <span>→</span>
+    <h3>@result</h3>
+</div>
+<button class="btn btn-primary" @onclick="Calculate">Calculate</button>

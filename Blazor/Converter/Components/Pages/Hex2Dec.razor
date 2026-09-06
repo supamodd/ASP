@@ -1,0 +1,14 @@
+@page "/Hex2Dec"
+@page "/hex2dec"
+@rendermode InteractiveServer
+
+<PageTitle>Hex2Dec</PageTitle>
+
+<h1>Hex2Dec</h1>
+
+<div class="converter">
+    <input type="text" @bind="input" @bind:after="Calculate" placeholder="FF" />
+    <span>→</span>
+    <h3>@result</h3>
+</div>
+<button class="btn btn-primary" @onclick="Calculate">Calculate</button>
