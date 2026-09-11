@@ -1,0 +1,37 @@
+.stats {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    font-size: 18px;
+}
+
+.task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+    max-width: 480px;
+}
+
+    .task-item label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        flex: 1;
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .task-item .done {
+        text-decoration: line-through;
+        color: #888;
+    }

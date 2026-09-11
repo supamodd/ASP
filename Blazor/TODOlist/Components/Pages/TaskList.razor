@@ -5,12 +5,21 @@
 <input type="text" @bind="description" />
 <button class="btn btn-primary" @onclick="AddTask">Добавить</button>
 
-<ul>
+<div class="stats">
+	<span>Всего: @tasklist.Count</span>
+	<span>Выполнено: @tasklist.Count(t => t.DONE)</span>
+	<span>Осталось: @tasklist.Count(t => !t.DONE)</span>
+</div>
+
+<ul class="task-list">
 	@foreach (TODO task in tasklist)
 	{
-		<li>
-			<input type="checkbox" @bind="@task.DONE" />
-			@task.Description
+		<li class="task-item">
+			<label>
+				<input type="checkbox" @bind="task.DONE" />
+				<span class="@(task.DONE ? "done" : null)">@task.Description</span>
+			</label>
+			<button class="btn btn-danger btn-sm" @onclick="() => DeleteTask(task)">Удалить</button>
 		</li>
 	}
 </ul>
@@ -34,5 +43,9 @@
 			tasklist.Add(task);
 			description = "";
 		}
+	}
+	void DeleteTask(TODO task)
+	{
+		tasklist.Remove(task);
 	}
 }
