@@ -1,0 +1,13 @@
+﻿.movie-container
+{
+	display:flex;
+	justify-content:space-between;
+}
+.movie-details
+{
+	width:70%;
+}
+dl.row
+{
+	margin:0;
+}
