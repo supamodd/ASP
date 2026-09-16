@@ -16,39 +16,64 @@
 }
 else
 {
-    <div class="row">
-        <div class="col-md-4">
-            <EditForm method="post" Model="Movie" OnValidSubmit="UpdateMovie" FormName="edit" Enhance>
-                <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
-                <input type="hidden" name="Movie.Id" value="@Movie.Id" />
-                <div class="mb-3">
-                    <label for="title" class="form-label">Title:</label>
-                    <InputText id="title" @bind-Value="Movie.Title" class="form-control" />
-                    <ValidationMessage For="() => Movie.Title" class="text-danger" />
+    <div class="movie-container">
+        <div class="movie-details">
+            <div class="row">
+                <div class="col-md-8">
+                    <EditForm method="post" Model="Movie" OnValidSubmit="UpdateMovie" FormName="edit" Enhance>
+                        <DataAnnotationsValidator />
+                        <ValidationSummary role="alert" />
+                        <input type="hidden" name="Movie.Id" value="@Movie.Id" />
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title:</label>
+                            <InputText id="title" @bind-Value="Movie.Title" class="form-control" />
+                            <ValidationMessage For="() => Movie.Title" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="releasedate" class="form-label">ReleaseDate:</label>
+                            <InputDate id="releasedate" @bind-Value="Movie.ReleaseDate" class="form-control" />
+                            <ValidationMessage For="() => Movie.ReleaseDate" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="genre" class="form-label">Genre:</label>
+                            <InputText id="genre" @bind-Value="Movie.Genre" class="form-control" />
+                            <ValidationMessage For="() => Movie.Genre" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="url" class="form-label">URL:</label>
+                            <InputText id="url" @bind-Value="Movie.URL" class="form-control" />
+                            <ValidationMessage For="() => Movie.URL" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="poster" class="form-label">Poster (URL картинки):</label>
+                            @* oninput — чтобы предпросмотр обновлялся прямо во время ввода ссылки *@
+                            <InputText id="poster" @bind-Value="Movie.Poster" @bind-Value:event="oninput"
+                                       class="form-control" placeholder="https://example.com/poster.jpg" />
+                            <ValidationMessage For="() => Movie.Poster" class="text-danger" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </EditForm>
                 </div>
-                <div class="mb-3">
-                    <label for="releasedate" class="form-label">ReleaseDate:</label>
-                    <InputDate id="releasedate" @bind-Value="Movie.ReleaseDate" class="form-control" />
-                    <ValidationMessage For="() => Movie.ReleaseDate" class="text-danger" />
+            </div>
+        </div>
+
+        @* Предпросмотр постера *@
+        <div class="movie-poster">
+            <div class="poster-caption">Poster</div>
+            @if (string.IsNullOrWhiteSpace(Movie.Poster))
+            {
+                <div class="poster-placeholder">Постер не задан</div>
+            }
+            else if (PosterIsBroken)
+            {
+                <div class="poster-placeholder">
+                    Постер не загрузился.<br />Проверьте ссылку выше.
                 </div>
-                <div class="mb-3">
-                    <label for="genre" class="form-label">Genre:</label>
-                    <InputText id="genre" @bind-Value="Movie.Genre" class="form-control" />
-                    <ValidationMessage For="() => Movie.Genre" class="text-danger" />
-                </div>
-                <div class="mb-3">
-                    <label for="url" class="form-label">URL:</label>
-                    <InputText id="url" @bind-Value="Movie.URL" class="form-control" />
-                    <ValidationMessage For="() => Movie.URL" class="text-danger" />
-                </div>
-                <div class="mb-3">
-                    <label for="poster" class="form-label">Poster:</label>
-                    <InputText id="poster" @bind-Value="Movie.Poster" class="form-control" />
-                    <ValidationMessage For="() => Movie.Poster" class="text-danger" />
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </EditForm>
+            }
+            else
+            {
+                <img src="@Movie.Poster" alt="Poster: @Movie.Title" @onerror="OnPosterError" />
+            }
         </div>
     </div>
 }
@@ -63,6 +88,16 @@ else
 
     [SupplyParameterFromForm]
     private Movie? Movie { get; set; }
+
+    // Ссылка на постер, которую браузер не смог загрузить (null — всё в порядке)
+    private string? _brokenPoster;
+
+    // Сломанной считается только та ссылка, на которой реально случилась ошибка:
+    // как только URL в поле меняется, постер снова пробует загрузиться.
+    private bool PosterIsBroken =>
+        !string.IsNullOrWhiteSpace(Movie?.Poster) && _brokenPoster == Movie.Poster;
+
+    private void OnPosterError() => _brokenPoster = Movie?.Poster;
 
     protected override async Task OnInitializedAsync()
     {
