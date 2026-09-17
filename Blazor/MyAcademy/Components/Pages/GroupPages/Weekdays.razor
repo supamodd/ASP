@@ -1,0 +1,36 @@
+﻿@* Выбор дней занятий. learning_days в БД хранится битовой маской:
+   1-Пн, 2-Вт, 4-Ср, 8-Чт, 16-Пт, 32-Сб, 64-Вс *@
+<div class="mb-3">
+	<span class="form-label">learning_days:</span>
+	<ul class="weekdays-list">
+		@for (int i = 0; i < DayNames.Length; i++)
+		{
+			int index = i;
+			<li>
+				<input type="checkbox" class="form-check-input" id="day_@index"
+					   checked="@IsDayChecked(index)"
+					   @onchange="@(async (ChangeEventArgs e) => await SetDayAsync(index, e.Value is bool b && b))" />
+				<label class="form-check-label" for="day_@index">@DayNames[index]</label>
+			</li>
+		}
+	</ul>
+	<ValidationMessage For="() => Mask" class="text-danger" />
+</div>
+
+@code {
+	private readonly string[] DayNames = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+
+	[Parameter]
+	public int Mask { get; set; }
+
+	[Parameter]
+	public EventCallback<int> MaskChanged { get; set; }
+
+	private bool IsDayChecked(int index) => (Mask & (1 << index)) != 0;
+
+	private async Task SetDayAsync(int index, bool value)
+	{
+		Mask = value ? (Mask | (1 << index)) : (Mask & ~(1 << index));
+		await MaskChanged.InvokeAsync(Mask);
+	}
+}

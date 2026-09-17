@@ -1,0 +1,42 @@
+﻿@page "/teachers"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using MyAcademy.Models
+@using MyAcademy.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+
+<PageTitle>Teachers</PageTitle>
+
+<h1>Teachers</h1>
+
+<p>
+	<a href="teachers/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Teachers">
+	<PropertyColumn Property="teacher => teacher.teacher_id" Sortable="true" />
+	<PropertyColumn Property="teacher => teacher.last_name" Sortable="true" />
+	<PropertyColumn Property="teacher => teacher.first_name" Sortable="true" />
+	<PropertyColumn Property="teacher => teacher.middle_name" Sortable="true" />
+	<PropertyColumn Property="teacher => teacher.birth_date" Sortable="true" />
+	<PropertyColumn Property="teacher => teacher.work_since" Sortable="true" />
+	<PropertyColumn Property="teacher => teacher.rate" Sortable="true" />
+	<TemplateColumn Context="teacher">
+		<a href="@($"teachers/edit?teacher_id={teacher.teacher_id}")">Edit</a> |
+		<a href="@($"teachers/details?teacher_id={teacher.teacher_id}")">Details</a> |
+		<a href="@($"teachers/delete?teacher_id={teacher.teacher_id}")">Delete</a>
+	</TemplateColumn>
+</QuickGrid>
+
+@code {
+	private MyAcademyContext context = default!;
+
+	protected override void OnInitialized()
+	{
+		context = DbFactory.CreateDbContext();
+
+	}
+
+	public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
