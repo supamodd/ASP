@@ -11,24 +11,18 @@ builder.Services.AddQuickGridEntityFrameworkAdapter();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // Эндпоинт /ApplyDatabaseMigrations, по которому стучит кнопка "Apply Migrations"
-    // на странице ошибки БД. В шаблоне он был ошибочно включён только для Production,
-    // из-за чего в Development кнопка отдавала 404.
     app.UseMigrationsEndPoint();
 }
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -37,8 +31,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-// Создаём БД (если её ещё нет) и накатываем все неприменённые миграции при старте.
-// Ошибка только логируется, чтобы остальные страницы сайта продолжали работать.
 using (var scope = app.Services.CreateScope())
 {
     try

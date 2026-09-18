@@ -1,0 +1,47 @@
+﻿@* Показ постера.
+   Если ссылка пустая, не похожа на ссылку или картинка не грузится - показываем заглушку
+   вместо "битого" значка изображения. *@
+
+<div class="movie-poster">
+    <div class="poster-caption">Poster</div>
+
+    @if (string.IsNullOrWhiteSpace(Poster))
+    {
+        <div class="poster-placeholder">Постер не задан</div>
+    }
+    else if (!LooksLikeUrl(Poster))
+    {
+        <div class="poster-placeholder">
+            В Poster нужно указывать ссылку (http://&#8230;) или загружать файл кнопкой ниже.<br />
+            Сейчас указано: <code>@Poster</code>
+        </div>
+    }
+    else if (_brokenPoster == Poster)
+    {
+        <div class="poster-placeholder">
+            Постер не загрузился.<br />Проверьте ссылку или загрузите файл.
+        </div>
+    }
+    else
+    {
+        <img src="@Poster" alt="@AltText" @onerror="OnPosterError" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Poster { get; set; }
+
+    [Parameter]
+    public string? AltText { get; set; }
+
+    // Ссылка, которую браузер умеет открыть: http(s)://&#8230; или локальный путь /posters/&#8230;
+    private string? _brokenPoster;
+
+    private static bool LooksLikeUrl(string value) =>
+        value.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+        || value.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+        || value.StartsWith("/", StringComparison.Ordinal);
+
+    private void OnPosterError() => _brokenPoster = Poster;
+}

@@ -1,0 +1,81 @@
+﻿@* Загрузка постера с компьютера.
+   Файл сохраняется в wwwroot/posters, а в поле Poster записывается ссылка /posters/имя.файла *@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Hosting
+@inject IWebHostEnvironment Environment
+
+<div class="mb-3">
+    <label for="poster-file" class="form-label">Или загрузите файл с компьютера:</label>
+    <InputFile id="poster-file" OnChange="OnFileSelected" accept="image/jpeg,image/png,image/webp,image/gif"
+               class="form-control" />
+    <div class="form-text">JPG, PNG, WEBP или GIF, до 5 МБ. Файл сохраняется в папку wwwroot\posters.</div>
+
+    @if (_error is not null)
+    {
+        <div class="text-danger mt-1">@_error</div>
+    }
+    else if (_savedName is not null)
+    {
+        <div class="text-success mt-1">Файл загружен: @_savedName</div>
+    }
+</div>
+
+@code {
+    // Постер, с которым работает страница (Create/Edit передают Movie.Poster)
+    [Parameter]
+    public string? Poster { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> PosterChanged { get; set; }
+
+    private const long MaxSize = 5 * 1024 * 1024; // 5 МБ
+    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+
+    private string? _error;
+    private string? _savedName;
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        _error = null;
+        _savedName = null;
+
+        IBrowserFile file = e.File;
+
+        if (file.Size > MaxSize)
+        {
+            _error = $"Файл слишком большой: {file.Size / 1024 / 1024} МБ. Максимум 5 МБ.";
+            return;
+        }
+
+        string extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        if (!AllowedExtensions.Contains(extension))
+        {
+            _error = "Нужен файл изображения: .jpg, .jpeg, .png, .webp или .gif";
+            return;
+        }
+
+        try
+        {
+            // WebRootPath - это папка wwwroot проекта
+            string folder = Path.Combine(Environment.WebRootPath, "posters");
+            Directory.CreateDirectory(folder);
+
+            string fileName = $"{Guid.NewGuid():N}{extension}";
+            string fullPath = Path.Combine(folder, fileName);
+
+            await using Stream source = file.OpenReadStream(MaxSize);
+            await using FileStream destination = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
+            await source.CopyToAsync(destination);
+
+            _savedName = file.Name;
+
+            // Важно: сохраняем именно ссылку, по которой браузер сможет открыть картинку
+            Poster = $"/posters/{fileName}";
+            await PosterChanged.InvokeAsync(Poster);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Не удалось сохранить файл: {ex.Message}";
+        }
+    }
+}
