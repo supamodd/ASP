@@ -5,17 +5,15 @@ namespace MyAcademy.Models
 	// Общие поля для Student и Teacher (наследники складываются в свои таблицы).
 	public class Human
 	{
-		[Required]
+		// В БД SPU_411_Import эти поля могут быть NULL (см. Teachers) - Required не ставим
 		public string last_name { get; set; } = string.Empty;
 
-		[Required]
 		public string first_name { get; set; } = string.Empty;
 
 		public string? middle_name { get; set; }
 
-		[Required]
 		[DataType(DataType.Date)]
-		public DateOnly birth_date { get; set; }
+		public DateOnly? birth_date { get; set; }
 
 		[EmailAddress]
 		public string? email { get; set; }
@@ -23,7 +21,7 @@ namespace MyAcademy.Models
 		[Phone]
 		public string? phone { get; set; }
 
-		// Фото хранится в БД в столбце photo (varbinary(max))
+		// Фото: в БД Students/Teachers столбец photo имеет тип image (читается в byte[]?)
 		public byte[]? photo { get; set; }
 	}
 }

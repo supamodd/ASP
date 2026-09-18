@@ -15,7 +15,6 @@ namespace MyAcademy.Models
 		[DatabaseGenerated(DatabaseGeneratedOption.None)]
 		public int direction_id { get; set; }
 
-		[Required]
 		public string direction_name { get; set; } = string.Empty;
 
 		// Navigation properties:

@@ -20,10 +20,10 @@
 	<TemplateColumn Context="group" Title="direction">
 		<span>@group.Direction?.direction_name</span>
 	</TemplateColumn>
-	<PropertyColumn Property="group => group.learning_days" Sortable="true" />
+	<PropertyColumn Property="group => group.start_date" Sortable="true" />
 	<PropertyColumn Property="group => group.start_time" Sortable="true" />
-	<TemplateColumn Context="group" Title="week days">
-		<span>@Week.Decode(group.learning_days)</span>
+	<TemplateColumn Context="group" Title="weekdays">
+		<span>@Week.Decode(group.weekdays)</span>
 	</TemplateColumn>
 	<TemplateColumn Context="group">
 		<a href="@($"groups/edit?group_id={group.group_id}")">Edit</a> |

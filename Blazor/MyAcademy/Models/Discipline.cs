@@ -11,7 +11,6 @@ namespace MyAcademy.Models
 		[DatabaseGenerated(DatabaseGeneratedOption.None)]
 		public int discipline_id { get; set; }
 
-		[Required]
 		public string discipline_name { get; set; } = string.Empty;
 
 		[Required]

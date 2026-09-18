@@ -18,11 +18,13 @@ namespace MyAcademy.Models
 		[ForeignKey(nameof(Direction))]
 		public int direction { get; set; }
 
-		// Дни занятий хранятся битовой маской: 1-Пн, 2-Вт, 4-Ср, 8-Чт, 16-Пт, 32-Сб, 64-Вс
+		// Дни занятий - битовая маска: 1-Пн, 2-Вт, 4-Ср, 8-Чт, 16-Пт, 32-Сб, 64-Вс
 		[Column(TypeName = "tinyint")]
-		public int learning_days { get; set; }
+		public int? weekdays { get; set; }
 
-		public TimeOnly start_time { get; set; }
+		public TimeOnly? start_time { get; set; }
+
+		public DateOnly? start_date { get; set; }
 
 		// Navigation properties:
 		public Direction? Direction { get; set; }

@@ -12,10 +12,10 @@ namespace MyAcademy.Models
 		public int teacher_id { get; set; }
 
 		[DataType(DataType.Date)]
-		public DateOnly work_since { get; set; }
+		public DateOnly? work_since { get; set; }
 
-		[Range(0, 10000)]
-		public decimal rate { get; set; }
+		[Column(TypeName = "smallmoney")]
+		public decimal? rate { get; set; }
 
 		// Navigation properties:
 		public ICollection<TeacherDisciplineRelation> DisciplinesRelations { get; set; } = new List<TeacherDisciplineRelation>();

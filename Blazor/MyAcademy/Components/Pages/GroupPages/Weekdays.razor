@@ -1,7 +1,7 @@
-﻿@* Выбор дней занятий. learning_days в БД хранится битовой маской:
+﻿@* Выбор дней занятий. В БД столбец Groups.weekdays хранит битовую маску:
    1-Пн, 2-Вт, 4-Ср, 8-Чт, 16-Пт, 32-Сб, 64-Вс *@
 <div class="mb-3">
-	<span class="form-label">learning_days:</span>
+	<span class="form-label">weekdays:</span>
 	<ul class="weekdays-list">
 		@for (int i = 0; i < DayNames.Length; i++)
 		{
@@ -21,16 +21,16 @@
 	private readonly string[] DayNames = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
 
 	[Parameter]
-	public int Mask { get; set; }
+	public int? Mask { get; set; }
 
 	[Parameter]
-	public EventCallback<int> MaskChanged { get; set; }
+	public EventCallback<int?> MaskChanged { get; set; }
 
-	private bool IsDayChecked(int index) => (Mask & (1 << index)) != 0;
+	private bool IsDayChecked(int index) => ((Mask ?? 0) & (1 << index)) != 0;
 
 	private async Task SetDayAsync(int index, bool value)
 	{
-		Mask = value ? (Mask | (1 << index)) : (Mask & ~(1 << index));
+		Mask = value ? ((Mask ?? 0) | (1 << index)) : ((Mask ?? 0) & ~(1 << index));
 		await MaskChanged.InvokeAsync(Mask);
 	}
 }

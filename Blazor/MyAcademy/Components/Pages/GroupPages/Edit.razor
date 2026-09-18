@@ -43,11 +43,16 @@ else
 				<ValidationMessage For="() => Group.direction" class="text-danger" />
 			</div>
 			@* Дни занятий: битовая маска (1-Пн, 2-Вт, 4-Ср, 8-Чт, 16-Пт, 32-Сб, 64-Вс) *@
-			<Weekdays @bind-Mask="Group.learning_days" />
+			<Weekdays @bind-Mask="Group.weekdays" />
 			<div class="mb-3">
 				<label for="start_time" class="form-label">start_time:</label>
 				<InputDate Type="InputDateType.Time" id="start_time" @bind-Value="Group.start_time" class="form-control" />
 				<ValidationMessage For="() => Group.start_time" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="start_date" class="form-label">start_date:</label>
+				<InputDate id="start_date" @bind-Value="Group.start_date" class="form-control" />
+				<ValidationMessage For="() => Group.start_date" class="text-danger" />
 			</div>
 				<button type="submit" class="btn btn-primary">Save</button>
 			</EditForm>

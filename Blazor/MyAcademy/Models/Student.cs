@@ -6,13 +6,12 @@ namespace MyAcademy.Models
 	// Студент
 	public class Student : Human
 	{
+		// stud_id - IDENTITY: значение присваивает сама БД
 		[Key]
-		[DatabaseGenerated(DatabaseGeneratedOption.None)]
 		public int stud_id { get; set; }
 
-		[Required]
 		[ForeignKey(nameof(Group))]
-		public int group { get; set; }
+		public int? group { get; set; }
 
 		// Navigation properties:
 		public Group? Group { get; set; }
