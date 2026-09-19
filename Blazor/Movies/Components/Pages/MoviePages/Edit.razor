@@ -46,7 +46,6 @@ else
                         </div>
                         <div class="mb-3">
                             <label for="poster" class="form-label">Poster (URL картинки):</label>
-                            @* oninput — чтобы предпросмотр обновлялся прямо во время ввода ссылки *@
                             <InputText id="poster" @bind-Value="Movie.Poster" @bind-Value:event="oninput"
                                        class="form-control" placeholder="https://example.com/poster.jpg" />
                             <ValidationMessage For="() => Movie.Poster" class="text-danger" />
