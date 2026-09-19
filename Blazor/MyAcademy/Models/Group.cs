@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyAcademy.Models
 {
-	// Учебная группа
 	public class Group
 	{
 		[Key]
@@ -18,7 +17,6 @@ namespace MyAcademy.Models
 		[ForeignKey(nameof(Direction))]
 		public int direction { get; set; }
 
-		// Дни занятий - битовая маска: 1-Пн, 2-Вт, 4-Ср, 8-Чт, 16-Пт, 32-Сб, 64-Вс
 		[Column(TypeName = "tinyint")]
 		public int? weekdays { get; set; }
 
@@ -26,7 +24,6 @@ namespace MyAcademy.Models
 
 		public DateOnly? start_date { get; set; }
 
-		// Navigation properties:
 		public Direction? Direction { get; set; }
 
 		public ICollection<Student> Students { get; set; } = new List<Student>();

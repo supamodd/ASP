@@ -1,6 +1,5 @@
 ﻿namespace MyAcademy.Models
 {
-	// Расшифровка битовой маски дней занятий (Groups.weekdays)
 	public static class Week
 	{
 		private static readonly string[] DAYNAMES = { "\u041f\u043d", "\u0412\u0442", "\u0421\u0440", "\u0427\u0442", "\u041f\u0442", "\u0421\u0431", "\u0412\u0441" };

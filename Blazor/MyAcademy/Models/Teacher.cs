@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyAcademy.Models
 {
-	// Преподаватель
 	public class Teacher : Human
 	{
 		[Key]
@@ -17,7 +16,6 @@ namespace MyAcademy.Models
 		[Column(TypeName = "smallmoney")]
 		public decimal? rate { get; set; }
 
-		// Navigation properties:
 		public ICollection<TeacherDisciplineRelation> DisciplinesRelations { get; set; } = new List<TeacherDisciplineRelation>();
 
 		public override string ToString() => $"{last_name} {first_name}";

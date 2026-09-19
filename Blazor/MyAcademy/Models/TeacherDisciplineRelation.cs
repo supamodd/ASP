@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MyAcademy.Models
 {
-	// Связь "преподаватель - дисциплина" (таблица TeachersDisciplinesRelation)
 	[PrimaryKey(nameof(teacher), nameof(discipline))]
 	public class TeacherDisciplineRelation
 	{
@@ -15,7 +14,6 @@ namespace MyAcademy.Models
 		[ForeignKey(nameof(Discipline))]
 		public int discipline { get; set; }
 
-		// Navigation properties:
 		public Teacher? Teacher { get; set; }
 
 		public Discipline? Discipline { get; set; }
