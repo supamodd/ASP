@@ -89,7 +89,6 @@
 	{
 		try
 		{
-			// Ограничение на размер файла: 5 МБ
 			using var stream = e.File.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
 			using var memoryStream = new MemoryStream();
 			await stream.CopyToAsync(memoryStream);
@@ -97,11 +96,9 @@
 		}
 		catch (IOException)
 		{
-			// Файл слишком большой или не читается - оставляем фото без изменений
 		}
 	}
 
-	// To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
 	private async Task AddTeacher()
 	{
 		using var context = DbFactory.CreateDbContext();

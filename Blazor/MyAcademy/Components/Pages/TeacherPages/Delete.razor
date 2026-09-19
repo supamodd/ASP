@@ -72,7 +72,6 @@ else
 		}
 		catch (DbUpdateException)
 		{
-			// Запись используется в других таблицах (есть связанные строки)
 			NavigationManager.NavigateTo($"/teachers/details?teacher_id={teacher!.teacher_id}");
 			return;
 		}
