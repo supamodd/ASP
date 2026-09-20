@@ -53,6 +53,7 @@
     [SupplyParameterFromForm]
     private Movie Movie { get; set; } = new();
 
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddMovie()
     {
         using var context = DbFactory.CreateDbContext();

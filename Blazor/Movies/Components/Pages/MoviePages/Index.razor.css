@@ -1,0 +1,11 @@
+﻿.controls
+{
+	display:flex;
+	justify-content:space-between;
+	align-content:center;
+}
+
+::deep .movie-title
+{
+	width:50%;
+}

@@ -1,4 +1,6 @@
 ﻿@page "/movies"
+@rendermode InteractiveServer
+
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Movies.Models
@@ -10,25 +12,42 @@
 
 <h1>Movies</h1>
 
-<p>
-    <a href="movies/create">Create New</a>
-</p>
+<div class="controls">
+	<p>
+		<a href="movies/create">Create New</a>
+	</p>
+	<select @bind="pagination.ItemsPerPage">
+		<option value="3">3</option>
+		<option value="5">5</option>
+		<option value="8">8</option>
+		<option value="10">10</option>
+	</select>
+</div>
 
-<QuickGrid Class="table" Items="context.Movie">
-    @* <PropertyColumn Property="movie => movie.Title" /> *@
-	<TemplateColumn>
-		<a href="@($"movies/details?id={context.Id}")">@context.Title</a>
-	</TemplateColumn>
-    <PropertyColumn Property="movie => movie.ReleaseDate" />
-    <PropertyColumn Property="movie => movie.Genre" />
+<div>
+	<QuickGrid Class="table" Items="context.Movie" Pagination="pagination">
+		@* <PropertyColumn Property="movie => movie.Title" /> *@
+		<TemplateColumn Title="Title"
+						Class="movie-title"
+						Sortable="true"
+						SortBy="sortBy">
+			<a href="@($"movies/details?id={context.Id}")">@context.Title</a>
+		</TemplateColumn>
+		<PropertyColumn Property="movie => movie.ReleaseDate" Sortable="true" />
+		<PropertyColumn Property="movie => movie.Genre" />
 
-   @*  <TemplateColumn Context="movie">
-        <a href="@($"movies/details?id={movie.Id}")">Details</a>
-    </TemplateColumn> *@
-</QuickGrid>
+		@*  <TemplateColumn Context="movie">
+		<a href="@($"movies/details?id={movie.Id}")">Details</a>
+		</TemplateColumn> *@
+	</QuickGrid>
+	<Paginator State="pagination" />
+</div>
 
 @code {
-    private MoviesContext context = default!;
+	private MoviesContext context = default!;
+	GridSort<Movie> sortBy = GridSort<Movie>.ByAscending(m => m.Title);
+
+	PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
 
     protected override void OnInitialized()
     {
