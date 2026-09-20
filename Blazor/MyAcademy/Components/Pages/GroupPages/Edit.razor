@@ -1,7 +1,7 @@
 ﻿@page "/groups/edit"
 @using Microsoft.EntityFrameworkCore
-@using MyAcademy.Models
-@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@using Academy.Models
+@inject IDbContextFactory<Academy.Data.AcademyContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
@@ -32,7 +32,7 @@ else
 				<span class="text-danger">*</span>
 				<label for="direction" class="form-label">direction:</label>
 				<InputSelect id="direction" @bind-Value="Group.direction" class="form-select">
-					@using (MyAcademy.Data.MyAcademyContext context = DbFactory.CreateDbContext())
+					@using (Academy.Data.AcademyContext context = DbFactory.CreateDbContext())
 					{
 						@foreach (var item in context.Directions)
 						{

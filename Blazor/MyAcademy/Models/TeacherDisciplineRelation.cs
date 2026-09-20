@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace MyAcademy.Models
+namespace Academy.Models
 {
 	[PrimaryKey(nameof(teacher), nameof(discipline))]
 	public class TeacherDisciplineRelation

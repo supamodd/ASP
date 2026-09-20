@@ -1,10 +1,10 @@
 ﻿@page "/disciplines"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
-@using MyAcademy.Models
-@using MyAcademy.Data
+@using Academy.Models
+@using Academy.Data
 @implements IAsyncDisposable
-@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject IDbContextFactory<Academy.Data.AcademyContext> DbFactory
 
 <PageTitle>Disciplines</PageTitle>
 
@@ -26,7 +26,7 @@
 </QuickGrid>
 
 @code {
-	private MyAcademyContext context = default!;
+	private AcademyContext context = default!;
 
 	protected override void OnInitialized()
 	{

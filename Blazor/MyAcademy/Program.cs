@@ -15,21 +15,57 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorComponents()
 	.AddInteractiveServerComponents();
 
+// По умолчанию SignalR в Blazor Server принимает сообщения только до 32 КБ,
+// поэтому загрузка файла (фото студента или преподавателя) больше 32 КБ падала с ошибкой.
+// Разрешаем передачу файлов до 5 МБ.
+builder.Services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(options =>
+    options.MaximumReceiveMessageSize = 5 * 1024 * 1024);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-	app.UseExceptionHandler("/Error", createScopeForErrors: true);
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-	app.UseHsts();
+    // Эндпоинт /ApplyDatabaseMigrations, по которому работает кнопка "Apply Migrations"
+    // на странице ошибки БД (в шаблоне он ошибочно включался только для Production).
     app.UseMigrationsEndPoint();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this value in production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+// Проверяем подключение к БД при старте.
+// База уже существует (Database First), поэтому миграции не накатываем,
+// а просто сообщаем в лог, если подключение не удалось - остальные страницы при этом работают.
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Academy");
+    try
+    {
+        var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AcademyContext>>();
+        using var db = dbFactory.CreateDbContext();
+        if (db.Database.CanConnect())
+        {
+            logger.LogInformation("Подключение к базе данных '{Database}' установлено.", db.Database.GetDbConnection().Database);
+        }
+        else
+        {
+            logger.LogError("База данных недоступна. Проверьте строку подключения 'AcademyContext' в appsettings.json.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Не удалось подключиться к базе данных. Проверьте строку подключения 'AcademyContext' в appsettings.json.");
+    }
+}
 
 app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode();
