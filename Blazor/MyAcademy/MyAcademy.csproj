@@ -19,4 +19,11 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Старый контекст от переименования Academy -> MyAcademy.
+         Если файл Data\AcademyContext.cs остался на диске - не компилируем его. -->
+    <Compile Remove="Data\AcademyContext.cs" />
+    <None Include="Data\AcademyContext.cs" />
+  </ItemGroup>
+
 </Project>
