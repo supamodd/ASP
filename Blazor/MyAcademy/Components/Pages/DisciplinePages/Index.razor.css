@@ -1,0 +1,31 @@
+.controls
+{
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	gap:12px;
+	flex-wrap:wrap;
+}
+
+.search-form
+{
+	display:flex;
+	align-items:center;
+	gap:6px;
+}
+
+.search-form input[type="search"]
+{
+	min-width:220px;
+}
+
+::deep .title
+{
+	width:40%;
+}
+
+.grid-container
+{
+	height:58vh;
+	overflow:auto;
+}

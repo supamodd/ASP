@@ -17,8 +17,9 @@
 		<a href="directions/create" class="btn btn-primary">Добавить</a>
 	</p>
 	<form action="/directions">
-		<input type="search" name="titleFilter" />
+		<input type="search" name="titleFilter" value="@TitleFilter" placeholder="Поиск по названию" />
 		<input type="submit" value="Поиск" class="btn btn-primary"/>
+		<a href="directions" class="btn btn-secondary">Сброс</a>
 	</form>
 	<div>
 		<label for="items-per-page"></label>
@@ -52,7 +53,7 @@
 	[SupplyParameterFromQuery]
 	string? TitleFilter { get; set; }
 	IQueryable<Direction> FilteredDirections =>
-	context.Directions.Where(d => (d.direction_name ?? string.Empty).Contains(TitleFilter ?? string.Empty));
+		context.Directions.Where(d => (d.direction_name ?? string.Empty).Contains(TitleFilter ?? string.Empty));
 
     protected override void OnInitialized()
     {

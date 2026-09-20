@@ -1,4 +1,6 @@
 ﻿@page "/disciplines"
+@rendermode InteractiveServer
+
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using MyAcademy.Models
@@ -10,28 +12,60 @@
 
 <h1>Disciplines</h1>
 
-<p>
-	<a href="disciplines/create">Create New</a>
-</p>
+<div class="controls">
+	<p>
+		<a href="disciplines/create" class="btn btn-primary">Create New</a>
+	</p>
+	<form action="/disciplines" class="search-form">
+		<input type="search" name="nameFilter" value="@NameFilter" placeholder="Search by name" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="disciplines" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="13">13</option>
+		</select>
+	</div>
+</div>
 
-<QuickGrid Class="table" Items="context.Disciplines">
-	<PropertyColumn Property="discipline => discipline.discipline_id" Sortable="true" />
-	<PropertyColumn Property="discipline => discipline.discipline_name" Sortable="true" />
-	<PropertyColumn Property="discipline => discipline.number_of_lessons" Sortable="true" />
-	<TemplateColumn Context="discipline">
-		<a href="@($"disciplines/edit?discipline_id={discipline.discipline_id}")">Edit</a> |
-		<a href="@($"disciplines/details?discipline_id={discipline.discipline_id}")">Details</a> |
-		<a href="@($"disciplines/delete?discipline_id={discipline.discipline_id}")">Delete</a>
-	</TemplateColumn>
-</QuickGrid>
+<div class="grid-container">
+	<QuickGrid Class="table" Items="FilteredDisciplines" Pagination="pagination">
+		<PropertyColumn Property="discipline => discipline.discipline_id" Sortable="true" />
+		<PropertyColumn Property="discipline => discipline.discipline_name" Sortable="true" Class="title" />
+		<PropertyColumn Property="discipline => discipline.number_of_lessons" Sortable="true" />
+		<TemplateColumn Context="discipline" Title="actions">
+			<a href="@($"disciplines/edit?discipline_id={discipline.discipline_id}")">Edit</a> |
+			<a href="@($"disciplines/details?discipline_id={discipline.discipline_id}")">Details</a> |
+			<a href="@($"disciplines/delete?discipline_id={discipline.discipline_id}")">Delete</a>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+<Paginator State="pagination" />
 
 @code {
 	private MyAcademyContext context = default!;
+	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+	// Поисковая строка приходит из адреса страницы: /disciplines?nameFilter=...
+	[SupplyParameterFromQuery]
+	string? NameFilter { get; set; }
+
+	// Пустой фильтр = показываем все записи.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => NameFilter ?? string.Empty;
+
+	IQueryable<Discipline> FilteredDisciplines =>
+		context.Disciplines.Where(d => (d.discipline_name ?? string.Empty).Contains(Filter));
+
 
 	protected override void OnInitialized()
 	{
 		context = DbFactory.CreateDbContext();
-
 	}
 
 	public async ValueTask DisposeAsync() => await context.DisposeAsync();

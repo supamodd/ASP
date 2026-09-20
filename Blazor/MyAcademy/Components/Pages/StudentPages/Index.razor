@@ -1,4 +1,6 @@
 ﻿@page "/students"
+@rendermode InteractiveServer
+
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using MyAcademy.Models
@@ -10,33 +12,74 @@
 
 <h1>Students</h1>
 
-<p>
-	<a href="students/create">Create New</a>
-</p>
+<div class="controls">
+	<p>
+		<a href="students/create" class="btn btn-primary">Create New</a>
+	</p>
+	<form action="/students" class="search-form">
+		<input type="search" name="nameFilter" value="@NameFilter" placeholder="Search by name or group" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="students" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="13">13</option>
+		</select>
+	</div>
+</div>
 
-<QuickGrid Class="table" Items="context.Students.Include(s => s.Group)">
-	<PropertyColumn Property="student => student.stud_id" Sortable="true" />
-	<PropertyColumn Property="student => student.last_name" Sortable="true" />
-	<PropertyColumn Property="student => student.first_name" Sortable="true" />
-	<PropertyColumn Property="student => student.middle_name" Sortable="true" />
-	<PropertyColumn Property="student => student.birth_date" Sortable="true" />
-	<TemplateColumn Context="student" Title="group">
-		<span>@student.Group?.group_name</span>
-	</TemplateColumn>
-	<TemplateColumn Context="student">
-		<a href="@($"students/edit?stud_id={student.stud_id}")">Edit</a> |
-		<a href="@($"students/details?stud_id={student.stud_id}")">Details</a> |
-		<a href="@($"students/delete?stud_id={student.stud_id}")">Delete</a>
-	</TemplateColumn>
-</QuickGrid>
+<div class="grid-container">
+	<QuickGrid Class="table" Items="FilteredStudents" Pagination="pagination">
+		<PropertyColumn Property="student => student.stud_id" Sortable="true" />
+		<PropertyColumn Property="student => student.last_name" Sortable="true" Class="title" />
+		<PropertyColumn Property="student => student.first_name" Sortable="true" />
+		<PropertyColumn Property="student => student.middle_name" Sortable="true" />
+		<PropertyColumn Property="student => student.birth_date" Sortable="true" />
+		<TemplateColumn Context="student" Title="group" Sortable="true" SortBy="@SortByGroup">
+			<span>@student.Group?.group_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="student" Title="actions">
+			<a href="@($"students/edit?stud_id={student.stud_id}")">Edit</a> |
+			<a href="@($"students/details?stud_id={student.stud_id}")">Details</a> |
+			<a href="@($"students/delete?stud_id={student.stud_id}")">Delete</a>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+<Paginator State="pagination" />
 
 @code {
 	private MyAcademyContext context = default!;
+	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+	// Поисковая строка приходит из адреса страницы: /students?nameFilter=...
+	[SupplyParameterFromQuery]
+	string? NameFilter { get; set; }
+
+	// Пустой фильтр = показываем все записи.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => NameFilter ?? string.Empty;
+
+	IQueryable<Student> FilteredStudents =>
+		context.Students.Include(s => s.Group).Where(s =>
+			s.last_name.Contains(Filter) ||
+			(s.first_name ?? string.Empty).Contains(Filter) ||
+			(s.middle_name ?? string.Empty).Contains(Filter) ||
+			(s.Group != null && s.Group.group_name.Contains(Filter)));
+
+
+	// Сортировка по связанному полю:
+	// TemplateColumn не поддерживает Property, поэтому передаём GridSort.ByAscending(...)
+	private GridSort<Student> SortByGroup { get; } =
+		GridSort<Student>.ByAscending(s => s.Group!.group_name);
 
 	protected override void OnInitialized()
 	{
 		context = DbFactory.CreateDbContext();
-
 	}
 
 	public async ValueTask DisposeAsync() => await context.DisposeAsync();
