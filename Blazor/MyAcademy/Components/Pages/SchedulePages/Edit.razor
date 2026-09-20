@@ -1,0 +1,142 @@
+﻿@page "/schedule/edit"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Schedule</h2>
+<hr />
+@if (lesson is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<div class="row">
+		<div class="col-md-6">
+			<EditForm method="post" Model="lesson" OnValidSubmit="UpdateSchedule" FormName="edit" Enhance>
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" role="alert" />
+				<input type="hidden" name="lesson.lesson_id" value="@lesson.lesson_id" />
+			<div class="mb-3">
+				<label for="group" class="form-label">group:</label>
+				<InputSelect id="group" @bind-Value="lesson.group" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Groups)
+						{
+							<option value="@o.group_id">@o.group_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => lesson.group" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="discipline" class="form-label">discipline:</label>
+				<InputSelect id="discipline" @bind-Value="lesson.discipline" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Disciplines)
+						{
+							<option value="@o.discipline_id">@o.discipline_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => lesson.discipline" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="teacher" class="form-label">teacher:</label>
+				<InputSelect id="teacher" @bind-Value="lesson.teacher" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Teachers)
+						{
+							<option value="@o.teacher_id">@o.last_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => lesson.teacher" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="date" class="form-label">date:</label>
+				<InputDate id="date" @bind-Value="lesson.date" class="form-control" />
+				<ValidationMessage For="() => lesson.date" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="time" class="form-label">time:</label>
+				<InputDate Type="InputDateType.Time" id="time" @bind-Value="lesson.time" class="form-control" />
+				<ValidationMessage For="() => lesson.time" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<div class="form-check">
+					<InputCheckbox id="spent" @bind-Value="lesson.spent" class="form-check-input" />
+					<label for="spent" class="form-check-label">spent:</label>
+				</div>
+				<ValidationMessage For="() => lesson.spent" class="text-danger" />
+			</div>
+				<button type="submit" class="btn btn-primary">Save</button>
+			</EditForm>
+		</div>
+	</div>
+}
+
+<div>
+	<a href="/schedule">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromQuery]
+	private long lesson_id { get; set; } = default!;
+
+	[SupplyParameterFromForm]
+	private Schedule? lesson { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		lesson ??= await context.Schedule
+			.Include(x => x.Group)
+			.Include(x => x.Discipline)
+			.Include(x => x.Teacher)
+			.FirstOrDefaultAsync(m => m.lesson_id == lesson_id);
+
+		if (lesson is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+
+	private async Task UpdateSchedule()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.Attach(lesson!).State = EntityState.Modified;
+
+		try
+		{
+			await context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!ScheduleExists())
+			{
+				NavigationManager.NavigateTo("notfound");
+			}
+			else
+			{
+				throw;
+			}
+		}
+
+		NavigationManager.NavigateTo("/schedule");
+	}
+
+	private bool ScheduleExists()
+	{
+		using var context = DbFactory.CreateDbContext();
+		return context.Schedule.Any(e => e.lesson_id == lesson_id);
+	}
+}

@@ -1,0 +1,155 @@
+﻿@page "/exams"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using MyAcademy.Models
+@using MyAcademy.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+
+<PageTitle>Exams</PageTitle>
+
+<h1>Exams</h1>
+
+<div class="controls">
+	<p>
+		<a href="exams/create" class="btn btn-primary">Create New</a>
+	</p>
+	<form action="/exams" class="search-form">
+		<input type="search" name="nameFilter" value="@NameFilter" placeholder="Search by Student, Discipline" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="exams" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="13">13</option>
+		</select>
+	</div>
+</div>
+
+<div class="filters">
+	<span class="filter-title">Filters:</span>
+		<label class="filter-item">student:
+			<select @bind="studentFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Students)
+				{
+					<option value="@o.stud_id">@o.last_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">discipline:
+			<select @bind="disciplineFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Disciplines)
+				{
+					<option value="@o.discipline_id">@o.discipline_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">date from:
+			<input type="date" @bind="dateFrom" class="form-control form-control-sm" />
+		</label>
+		<label class="filter-item">to:
+			<input type="date" @bind="dateTo" class="form-control form-control-sm" />
+		</label>
+	<a href="exams" class="btn btn-secondary btn-sm">Reset</a>
+</div>
+
+<div class="grid-container">
+	<QuickGrid Class="table" Items="FilteredExams" Pagination="pagination">
+		<TemplateColumn Context="exam" Title="student" Sortable="true" SortBy="@SortByStudent">
+			<span>@exam.Student?.last_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="exam" Title="discipline" Sortable="true" SortBy="@SortByDiscipline">
+			<span>@exam.Discipline?.discipline_name</span>
+		</TemplateColumn>
+		<PropertyColumn Property="exam => exam.date" Sortable="true" />
+		<PropertyColumn Property="exam => exam.grade" Sortable="true" />
+		<TemplateColumn Context="exam" Title="actions">
+			<a href="@($"exams/edit?student={exam.student}&discipline={exam.discipline}")">Edit</a> |
+			<a href="@($"exams/details?student={exam.student}&discipline={exam.discipline}")">Details</a> |
+			<a href="@($"exams/delete?student={exam.student}&discipline={exam.discipline}")">Delete</a>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+<Paginator State="pagination" />
+
+@code {
+	private MyAcademyContext context = default!;
+	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+	// Поисковая строка приходит из адреса страницы: /exams?nameFilter=...
+	[SupplyParameterFromQuery]
+	string? NameFilter { get; set; }
+
+	// Пустой фильтр = показываем все записи.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => NameFilter ?? string.Empty;
+
+	private int studentFilter { get; set; }
+	private int disciplineFilter { get; set; }
+	private DateOnly? dateFrom { get; set; }
+	private DateOnly? dateTo { get; set; }
+
+	IQueryable<Exam> FilteredExams =>
+		BuildQuery();
+
+	private IQueryable<Exam> BuildQuery()
+	{
+		IQueryable<Exam> q = context.Exams
+			.Include(x => x.Student)
+			.Include(x => x.Discipline);
+
+		var f = Filter;
+		if (!string.IsNullOrEmpty(f))
+		{
+			q = q.Where(x =>
+				x.Student != null && x.Student.last_name.Contains(f) ||
+				x.Discipline != null && (x.Discipline.discipline_name ?? string.Empty).Contains(f));
+		}
+
+		if (studentFilter != 0)
+		{
+			q = q.Where(x => x.student == studentFilter);
+		}
+
+		if (disciplineFilter != 0)
+		{
+			q = q.Where(x => x.discipline == disciplineFilter);
+		}
+
+		if (dateFrom is not null)
+		{
+			q = q.Where(x => x.date != null && x.date >= dateFrom);
+		}
+
+		if (dateTo is not null)
+		{
+			q = q.Where(x => x.date != null && x.date <= dateTo);
+		}
+
+		return q;
+	}
+
+	// Сортировка по связанным полям: TemplateColumn не поддерживает Property,
+	// поэтому передаём GridSort.ByAscending(...)
+	private GridSort<Exam> SortByStudent { get; } =
+		GridSort<Exam>.ByAscending(x => x.Student!.last_name);
+
+	private GridSort<Exam> SortByDiscipline { get; } =
+		GridSort<Exam>.ByAscending(x => x.Discipline!.discipline_name);
+
+	protected override void OnInitialized()
+	{
+		context = DbFactory.CreateDbContext();
+	}
+
+	public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

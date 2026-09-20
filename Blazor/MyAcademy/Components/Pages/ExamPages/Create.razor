@@ -1,0 +1,74 @@
+﻿@page "/exams/create"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Exam</h2>
+<hr />
+<div class="row">
+	<div class="col-md-6">
+		<EditForm method="post" Model="exam" OnValidSubmit="AddExam" FormName="create" Enhance>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="text-danger" role="alert" />
+			<div class="mb-3">
+				<label for="student" class="form-label">student:</label>
+				<InputSelect id="student" @bind-Value="exam.student" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Students)
+						{
+							<option value="@o.stud_id">@o.last_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => exam.student" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="discipline" class="form-label">discipline:</label>
+				<InputSelect id="discipline" @bind-Value="exam.discipline" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Disciplines)
+						{
+							<option value="@o.discipline_id">@o.discipline_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => exam.discipline" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="date" class="form-label">date:</label>
+				<InputDate id="date" @bind-Value="exam.date" class="form-control" />
+				<ValidationMessage For="() => exam.date" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="grade" class="form-label">grade:</label>
+				<InputNumber id="grade" @bind-Value="exam.grade" class="form-control" />
+				<ValidationMessage For="() => exam.grade" class="text-danger" />
+			</div>
+			<button type="submit" class="btn btn-primary">Create</button>
+		</EditForm>
+	</div>
+</div>
+
+<div>
+	<a href="/exams">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromForm]
+	private Exam exam { get; set; } = new();
+
+	private async Task AddExam()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.Exams.Add(exam);
+		await context.SaveChangesAsync();
+		NavigationManager.NavigateTo("/exams");
+	}
+}

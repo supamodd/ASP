@@ -1,0 +1,58 @@
+﻿@page "/exams/details"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<h2>Exam</h2>
+<hr />
+@if (exam is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<dl class="row">
+		<dt class="col-sm-2">student</dt>
+		<dd class="col-sm-10">@($"{exam.Student?.last_name} ({exam.student})")</dd>
+		<dt class="col-sm-2">discipline</dt>
+		<dd class="col-sm-10">@($"{exam.Discipline?.discipline_name} ({exam.discipline})")</dd>
+		<dt class="col-sm-2">date</dt>
+		<dd class="col-sm-10">@exam.date</dd>
+		<dt class="col-sm-2">grade</dt>
+		<dd class="col-sm-10">@exam.grade</dd>
+	</dl>
+
+}
+
+<div>
+	<a href="@($"/exams/edit?student={exam.student}&discipline={exam.discipline}")">Edit</a> |
+	<a href="/exams">Back to List</a>
+</div>
+
+@code {
+	private Exam? exam;
+
+	[SupplyParameterFromQuery]
+	private int student { get; set; } = default!;
+	[SupplyParameterFromQuery]
+	private int discipline { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		exam ??= await context.Exams
+			.Include(x => x.Student)
+			.Include(x => x.Discipline)
+			.FirstOrDefaultAsync(m => m.student == student && m.discipline == discipline);
+
+		if (exam is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+}

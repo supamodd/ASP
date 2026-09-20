@@ -1,0 +1,53 @@
+﻿@page "/daysoff/details"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<h2>DayOFF</h2>
+<hr />
+@if (day is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<dl class="row">
+		<dt class="col-sm-2">date</dt>
+		<dd class="col-sm-10">@day.date</dd>
+		<dt class="col-sm-2">holiday</dt>
+		<dd class="col-sm-10">@($"{day.Holiday?.holiday_name} ({day.holiday})")</dd>
+	</dl>
+
+}
+
+<div>
+	<a href="@($"/daysoff/edit?date={day.date}&holiday={day.holiday}")">Edit</a> |
+	<a href="/daysoff">Back to List</a>
+</div>
+
+@code {
+	private DayOFF? day;
+
+	[SupplyParameterFromQuery]
+	private DateOnly date { get; set; } = default!;
+	[SupplyParameterFromQuery]
+	private int holiday { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		day ??= await context.DaysOFF
+			.Include(x => x.Holiday)
+			.FirstOrDefaultAsync(m => m.date == date && m.holiday == holiday);
+
+		if (day is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+}

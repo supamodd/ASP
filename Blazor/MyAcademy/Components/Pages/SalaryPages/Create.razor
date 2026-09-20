@@ -1,0 +1,68 @@
+﻿@page "/salary/create"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Salary</h2>
+<hr />
+<div class="row">
+	<div class="col-md-6">
+		<EditForm method="post" Model="payment" OnValidSubmit="AddSalary" FormName="create" Enhance>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="text-danger" role="alert" />
+			<div class="mb-3">
+				<label for="payment_id" class="form-label">payment_id:</label>
+				<InputNumber id="payment_id" @bind-Value="payment.payment_id" class="form-control" />
+				<ValidationMessage For="() => payment.payment_id" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="teacher" class="form-label">teacher:</label>
+				<InputSelect id="teacher" @bind-Value="payment.teacher" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Teachers)
+						{
+							<option value="@o.teacher_id">@o.last_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => payment.teacher" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="accrued" class="form-label">accrued:</label>
+				<InputNumber id="accrued" @bind-Value="payment.accrued" class="form-control" />
+				<ValidationMessage For="() => payment.accrued" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<div class="form-check">
+					<InputCheckbox id="received" @bind-Value="payment.received" class="form-check-input" />
+					<label for="received" class="form-check-label">received:</label>
+				</div>
+				<ValidationMessage For="() => payment.received" class="text-danger" />
+			</div>
+			<button type="submit" class="btn btn-primary">Create</button>
+		</EditForm>
+	</div>
+</div>
+
+<div>
+	<a href="/salary">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromForm]
+	private Salary payment { get; set; } = new();
+
+	private async Task AddSalary()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.Salary.Add(payment);
+		await context.SaveChangesAsync();
+		NavigationManager.NavigateTo("/salary");
+	}
+}

@@ -1,0 +1,131 @@
+﻿@page "/daysoff"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using MyAcademy.Models
+@using MyAcademy.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+
+<PageTitle>Days OFF</PageTitle>
+
+<h1>Days OFF</h1>
+
+<div class="controls">
+	<p>
+		<a href="daysoff/create" class="btn btn-primary">Create New</a>
+	</p>
+	<form action="/daysoff" class="search-form">
+		<input type="search" name="nameFilter" value="@NameFilter" placeholder="Search by Holiday" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="daysoff" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="13">13</option>
+		</select>
+	</div>
+</div>
+
+<div class="filters">
+	<span class="filter-title">Filters:</span>
+		<label class="filter-item">holiday:
+			<select @bind="holidayFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Holidays)
+				{
+					<option value="@o.holiday_id">@o.holiday_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">date from:
+			<input type="date" @bind="dateFrom" class="form-control form-control-sm" />
+		</label>
+		<label class="filter-item">to:
+			<input type="date" @bind="dateTo" class="form-control form-control-sm" />
+		</label>
+	<a href="daysoff" class="btn btn-secondary btn-sm">Reset</a>
+</div>
+
+<div class="grid-container">
+	<QuickGrid Class="table" Items="FilteredDaysOFF" Pagination="pagination">
+		<PropertyColumn Property="day => day.date" Sortable="true" />
+		<TemplateColumn Context="day" Title="holiday" Sortable="true" SortBy="@SortByHoliday">
+			<span>@day.Holiday?.holiday_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="day" Title="actions">
+			<a href="@($"daysoff/edit?date={day.date}&holiday={day.holiday}")">Edit</a> |
+			<a href="@($"daysoff/details?date={day.date}&holiday={day.holiday}")">Details</a> |
+			<a href="@($"daysoff/delete?date={day.date}&holiday={day.holiday}")">Delete</a>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+<Paginator State="pagination" />
+
+@code {
+	private MyAcademyContext context = default!;
+	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+	// Поисковая строка приходит из адреса страницы: /daysoff?nameFilter=...
+	[SupplyParameterFromQuery]
+	string? NameFilter { get; set; }
+
+	// Пустой фильтр = показываем все записи.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => NameFilter ?? string.Empty;
+
+	private int holidayFilter { get; set; }
+	private DateOnly? dateFrom { get; set; }
+	private DateOnly? dateTo { get; set; }
+
+	IQueryable<DayOFF> FilteredDaysOFF =>
+		BuildQuery();
+
+	private IQueryable<DayOFF> BuildQuery()
+	{
+		IQueryable<DayOFF> q = context.DaysOFF
+			.Include(x => x.Holiday);
+
+		var f = Filter;
+		if (!string.IsNullOrEmpty(f))
+		{
+			q = q.Where(x =>
+				x.Holiday != null && (x.Holiday.holiday_name ?? string.Empty).Contains(f));
+		}
+
+		if (holidayFilter != 0)
+		{
+			q = q.Where(x => x.holiday == holidayFilter);
+		}
+
+		if (dateFrom is not null)
+		{
+			q = q.Where(x => x.date != null && x.date >= dateFrom);
+		}
+
+		if (dateTo is not null)
+		{
+			q = q.Where(x => x.date != null && x.date <= dateTo);
+		}
+
+		return q;
+	}
+
+	// Сортировка по связанным полям: TemplateColumn не поддерживает Property,
+	// поэтому передаём GridSort.ByAscending(...)
+	private GridSort<DayOFF> SortByHoliday { get; } =
+		GridSort<DayOFF>.ByAscending(x => x.Holiday!.holiday_name);
+
+	protected override void OnInitialized()
+	{
+		context = DbFactory.CreateDbContext();
+	}
+
+	public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

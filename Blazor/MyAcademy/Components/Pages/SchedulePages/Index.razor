@@ -1,0 +1,193 @@
+﻿@page "/schedule"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using MyAcademy.Models
+@using MyAcademy.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+
+<PageTitle>Schedule</PageTitle>
+
+<h1>Schedule</h1>
+
+<div class="controls">
+	<p>
+		<a href="schedule/create" class="btn btn-primary">Create New</a>
+	</p>
+	<form action="/schedule" class="search-form">
+		<input type="search" name="nameFilter" value="@NameFilter" placeholder="Search by Group, Discipline, Teacher" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="schedule" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="13">13</option>
+		</select>
+	</div>
+</div>
+
+<div class="filters">
+	<span class="filter-title">Filters:</span>
+		<label class="filter-item">group:
+			<select @bind="groupFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Groups)
+				{
+					<option value="@o.group_id">@o.group_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">discipline:
+			<select @bind="disciplineFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Disciplines)
+				{
+					<option value="@o.discipline_id">@o.discipline_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">teacher:
+			<select @bind="teacherFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Teachers)
+				{
+					<option value="@o.teacher_id">@o.last_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">date from:
+			<input type="date" @bind="dateFrom" class="form-control form-control-sm" />
+		</label>
+		<label class="filter-item">to:
+			<input type="date" @bind="dateTo" class="form-control form-control-sm" />
+		</label>
+		<label class="filter-item">spent:
+			<select @bind="spentFilter" class="form-select form-select-sm">
+				<option value="">all</option>
+				<option value="true">yes</option>
+				<option value="false">no</option>
+			</select>
+		</label>
+	<a href="schedule" class="btn btn-secondary btn-sm">Reset</a>
+</div>
+
+<div class="grid-container">
+	<QuickGrid Class="table" Items="FilteredSchedule" Pagination="pagination">
+		<PropertyColumn Property="lesson => lesson.lesson_id" Sortable="true" />
+		<TemplateColumn Context="lesson" Title="group" Sortable="true" SortBy="@SortByGroup">
+			<span>@lesson.Group?.group_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="lesson" Title="discipline" Sortable="true" SortBy="@SortByDiscipline">
+			<span>@lesson.Discipline?.discipline_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="lesson" Title="teacher" Sortable="true" SortBy="@SortByTeacher">
+			<span>@lesson.Teacher?.last_name</span>
+		</TemplateColumn>
+		<PropertyColumn Property="lesson => lesson.date" Sortable="true" />
+		<PropertyColumn Property="lesson => lesson.time" Sortable="true" />
+		<PropertyColumn Property="lesson => lesson.spent" Sortable="true" />
+		<TemplateColumn Context="lesson" Title="actions">
+			<a href="@($"schedule/edit?lesson_id={lesson.lesson_id}")">Edit</a> |
+			<a href="@($"schedule/details?lesson_id={lesson.lesson_id}")">Details</a> |
+			<a href="@($"schedule/delete?lesson_id={lesson.lesson_id}")">Delete</a>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+<Paginator State="pagination" />
+
+@code {
+	private MyAcademyContext context = default!;
+	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+	// Поисковая строка приходит из адреса страницы: /schedule?nameFilter=...
+	[SupplyParameterFromQuery]
+	string? NameFilter { get; set; }
+
+	// Пустой фильтр = показываем все записи.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => NameFilter ?? string.Empty;
+
+	private int groupFilter { get; set; }
+	private int disciplineFilter { get; set; }
+	private int teacherFilter { get; set; }
+	private DateOnly? dateFrom { get; set; }
+	private DateOnly? dateTo { get; set; }
+	private bool? spentFilter { get; set; }
+
+	IQueryable<Schedule> FilteredSchedule =>
+		BuildQuery();
+
+	private IQueryable<Schedule> BuildQuery()
+	{
+		IQueryable<Schedule> q = context.Schedule
+			.Include(x => x.Group)
+			.Include(x => x.Discipline)
+			.Include(x => x.Teacher);
+
+		var f = Filter;
+		if (!string.IsNullOrEmpty(f))
+		{
+			q = q.Where(x =>
+				x.Group != null && x.Group.group_name.Contains(f) ||
+				x.Discipline != null && (x.Discipline.discipline_name ?? string.Empty).Contains(f) ||
+				x.Teacher != null && (x.Teacher.last_name ?? string.Empty).Contains(f));
+		}
+
+		if (groupFilter != 0)
+		{
+			q = q.Where(x => x.group == groupFilter);
+		}
+
+		if (disciplineFilter != 0)
+		{
+			q = q.Where(x => x.discipline == disciplineFilter);
+		}
+
+		if (teacherFilter != 0)
+		{
+			q = q.Where(x => x.teacher == teacherFilter);
+		}
+
+		if (dateFrom is not null)
+		{
+			q = q.Where(x => x.date != null && x.date >= dateFrom);
+		}
+
+		if (dateTo is not null)
+		{
+			q = q.Where(x => x.date != null && x.date <= dateTo);
+		}
+
+		if (spentFilter is not null)
+		{
+			q = q.Where(x => x.spent == spentFilter);
+		}
+
+		return q;
+	}
+
+	// Сортировка по связанным полям: TemplateColumn не поддерживает Property,
+	// поэтому передаём GridSort.ByAscending(...)
+	private GridSort<Schedule> SortByGroup { get; } =
+		GridSort<Schedule>.ByAscending(x => x.Group!.group_name);
+
+	private GridSort<Schedule> SortByDiscipline { get; } =
+		GridSort<Schedule>.ByAscending(x => x.Discipline!.discipline_name);
+
+	private GridSort<Schedule> SortByTeacher { get; } =
+		GridSort<Schedule>.ByAscending(x => x.Teacher!.last_name);
+
+	protected override void OnInitialized()
+	{
+		context = DbFactory.CreateDbContext();
+	}
+
+	public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

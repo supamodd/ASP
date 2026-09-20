@@ -1,0 +1,64 @@
+﻿@page "/complete-disciplines/create"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>CompleteDiscipline</h2>
+<hr />
+<div class="row">
+	<div class="col-md-6">
+		<EditForm method="post" Model="item" OnValidSubmit="AddCompleteDiscipline" FormName="create" Enhance>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="text-danger" role="alert" />
+			<div class="mb-3">
+				<label for="group" class="form-label">group:</label>
+				<InputSelect id="group" @bind-Value="item.group" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Groups)
+						{
+							<option value="@o.group_id">@o.group_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => item.group" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="discipline" class="form-label">discipline:</label>
+				<InputSelect id="discipline" @bind-Value="item.discipline" class="form-select">
+					@using (MyAcademy.Data.MyAcademyContext ctx = DbFactory.CreateDbContext())
+					{
+						@foreach (var o in ctx.Disciplines)
+						{
+							<option value="@o.discipline_id">@o.discipline_name</option>
+						}
+					}
+				</InputSelect>
+				<ValidationMessage For="() => item.discipline" class="text-danger" />
+			</div>
+			<button type="submit" class="btn btn-primary">Create</button>
+		</EditForm>
+	</div>
+</div>
+
+<div>
+	<a href="/complete-disciplines">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromForm]
+	private CompleteDiscipline item { get; set; } = new();
+
+	private async Task AddCompleteDiscipline()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.CompleteDisciplines.Add(item);
+		await context.SaveChangesAsync();
+		NavigationManager.NavigateTo("/complete-disciplines");
+	}
+}

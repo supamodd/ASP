@@ -1,0 +1,101 @@
+﻿@page "/grades/edit"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Grade</h2>
+<hr />
+@if (grade is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<div class="row">
+		<div class="col-md-6">
+			<EditForm method="post" Model="grade" OnValidSubmit="UpdateGrade" FormName="edit" Enhance>
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" role="alert" />
+				<input type="hidden" name="grade.student" value="@grade.student" />
+				<input type="hidden" name="grade.lesson" value="@grade.lesson" />
+			<div class="mb-3">
+				<label for="grade_1" class="form-label">grade_1:</label>
+				<InputNumber id="grade_1" @bind-Value="grade.grade_1" class="form-control" />
+				<ValidationMessage For="() => grade.grade_1" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="grade_2" class="form-label">grade_2:</label>
+				<InputNumber id="grade_2" @bind-Value="grade.grade_2" class="form-control" />
+				<ValidationMessage For="() => grade.grade_2" class="text-danger" />
+			</div>
+				<button type="submit" class="btn btn-primary">Save</button>
+			</EditForm>
+		</div>
+	</div>
+}
+
+<div>
+	<a href="/grades">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromQuery]
+	private int student { get; set; } = default!;
+	[SupplyParameterFromQuery]
+	private long lesson { get; set; } = default!;
+
+	[SupplyParameterFromForm]
+	private Grade? grade { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		grade ??= await context.Grades
+			.Include(x => x.Student)
+			.Include(x => x.Lesson)
+			.Include(x => x.Lesson).ThenInclude(y => y.Group)
+			.Include(x => x.Lesson).ThenInclude(y => y.Discipline)
+			.Include(x => x.Lesson).ThenInclude(y => y.Teacher)
+			.FirstOrDefaultAsync(m => m.student == student && m.lesson == lesson);
+
+		if (grade is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+
+	private async Task UpdateGrade()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.Attach(grade!).State = EntityState.Modified;
+
+		try
+		{
+			await context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!GradeExists())
+			{
+				NavigationManager.NavigateTo("notfound");
+			}
+			else
+			{
+				throw;
+			}
+		}
+
+		NavigationManager.NavigateTo("/grades");
+	}
+
+	private bool GradeExists()
+	{
+		using var context = DbFactory.CreateDbContext();
+		return context.Grades.Any(e => e.student == student && e.lesson == lesson);
+	}
+}

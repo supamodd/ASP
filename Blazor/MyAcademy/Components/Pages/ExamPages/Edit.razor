@@ -1,0 +1,98 @@
+﻿@page "/exams/edit"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Exam</h2>
+<hr />
+@if (exam is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<div class="row">
+		<div class="col-md-6">
+			<EditForm method="post" Model="exam" OnValidSubmit="UpdateExam" FormName="edit" Enhance>
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" role="alert" />
+				<input type="hidden" name="exam.student" value="@exam.student" />
+				<input type="hidden" name="exam.discipline" value="@exam.discipline" />
+			<div class="mb-3">
+				<label for="date" class="form-label">date:</label>
+				<InputDate id="date" @bind-Value="exam.date" class="form-control" />
+				<ValidationMessage For="() => exam.date" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="grade" class="form-label">grade:</label>
+				<InputNumber id="grade" @bind-Value="exam.grade" class="form-control" />
+				<ValidationMessage For="() => exam.grade" class="text-danger" />
+			</div>
+				<button type="submit" class="btn btn-primary">Save</button>
+			</EditForm>
+		</div>
+	</div>
+}
+
+<div>
+	<a href="/exams">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromQuery]
+	private int student { get; set; } = default!;
+	[SupplyParameterFromQuery]
+	private int discipline { get; set; } = default!;
+
+	[SupplyParameterFromForm]
+	private Exam? exam { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		exam ??= await context.Exams
+			.Include(x => x.Student)
+			.Include(x => x.Discipline)
+			.FirstOrDefaultAsync(m => m.student == student && m.discipline == discipline);
+
+		if (exam is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+
+	private async Task UpdateExam()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.Attach(exam!).State = EntityState.Modified;
+
+		try
+		{
+			await context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!ExamExists())
+			{
+				NavigationManager.NavigateTo("notfound");
+			}
+			else
+			{
+				throw;
+			}
+		}
+
+		NavigationManager.NavigateTo("/exams");
+	}
+
+	private bool ExamExists()
+	{
+		using var context = DbFactory.CreateDbContext();
+		return context.Exams.Any(e => e.student == student && e.discipline == discipline);
+	}
+}

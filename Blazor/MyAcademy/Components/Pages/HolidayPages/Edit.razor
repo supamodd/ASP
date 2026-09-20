@@ -1,0 +1,103 @@
+﻿@page "/holidays/edit"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Holiday</h2>
+<hr />
+@if (holiday is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<div class="row">
+		<div class="col-md-6">
+			<EditForm method="post" Model="holiday" OnValidSubmit="UpdateHoliday" FormName="edit" Enhance>
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" role="alert" />
+				<input type="hidden" name="holiday.holiday_id" value="@holiday.holiday_id" />
+			<div class="mb-3">
+				<label for="holiday_name" class="form-label">holiday_name:</label>
+				<InputText id="holiday_name" @bind-Value="holiday.holiday_name" class="form-control" />
+				<ValidationMessage For="() => holiday.holiday_name" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="duration" class="form-label">duration:</label>
+				<InputNumber id="duration" @bind-Value="holiday.duration" class="form-control" />
+				<ValidationMessage For="() => holiday.duration" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="month" class="form-label">month:</label>
+				<InputNumber id="month" @bind-Value="holiday.month" class="form-control" />
+				<ValidationMessage For="() => holiday.month" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="day" class="form-label">day:</label>
+				<InputNumber id="day" @bind-Value="holiday.day" class="form-control" />
+				<ValidationMessage For="() => holiday.day" class="text-danger" />
+			</div>
+				<button type="submit" class="btn btn-primary">Save</button>
+			</EditForm>
+		</div>
+	</div>
+}
+
+<div>
+	<a href="/holidays">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromQuery]
+	private int holiday_id { get; set; } = default!;
+
+	[SupplyParameterFromForm]
+	private Holiday? holiday { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		holiday ??= await context.Holidays
+			.FirstOrDefaultAsync(m => m.holiday_id == holiday_id);
+
+		if (holiday is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+
+	private async Task UpdateHoliday()
+	{
+		using var context = DbFactory.CreateDbContext();
+		context.Attach(holiday!).State = EntityState.Modified;
+
+		try
+		{
+			await context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!HolidayExists())
+			{
+				NavigationManager.NavigateTo("notfound");
+			}
+			else
+			{
+				throw;
+			}
+		}
+
+		NavigationManager.NavigateTo("/holidays");
+	}
+
+	private bool HolidayExists()
+	{
+		using var context = DbFactory.CreateDbContext();
+		return context.Holidays.Any(e => e.holiday_id == holiday_id);
+	}
+}

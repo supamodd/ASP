@@ -1,0 +1,135 @@
+﻿@page "/teacher-disciplines"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using MyAcademy.Models
+@using MyAcademy.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+
+<PageTitle>Teachers - Disciplines</PageTitle>
+
+<h1>Teachers - Disciplines</h1>
+
+<div class="controls">
+	<p>
+		<a href="teacher-disciplines/create" class="btn btn-primary">Create New</a>
+	</p>
+	<form action="/teacher-disciplines" class="search-form">
+		<input type="search" name="nameFilter" value="@NameFilter" placeholder="Search by Teacher, Discipline" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="teacher-disciplines" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="13">13</option>
+		</select>
+	</div>
+</div>
+
+<div class="filters">
+	<span class="filter-title">Filters:</span>
+		<label class="filter-item">teacher:
+			<select @bind="teacherFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Teachers)
+				{
+					<option value="@o.teacher_id">@o.last_name</option>
+				}
+			</select>
+		</label>
+		<label class="filter-item">discipline:
+			<select @bind="disciplineFilter" class="form-select form-select-sm">
+				<option value="0">all</option>
+				@foreach (var o in context.Disciplines)
+				{
+					<option value="@o.discipline_id">@o.discipline_name</option>
+				}
+			</select>
+		</label>
+	<a href="teacher-disciplines" class="btn btn-secondary btn-sm">Reset</a>
+</div>
+
+<div class="grid-container">
+	<QuickGrid Class="table" Items="FilteredTeachersDisciplinesRelation" Pagination="pagination">
+		<TemplateColumn Context="item" Title="teacher" Sortable="true" SortBy="@SortByTeacher">
+			<span>@item.Teacher?.last_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="item" Title="discipline" Sortable="true" SortBy="@SortByDiscipline">
+			<span>@item.Discipline?.discipline_name</span>
+		</TemplateColumn>
+		<TemplateColumn Context="item" Title="actions">
+			<a href="@($"teacher-disciplines/edit?teacher={item.teacher}&discipline={item.discipline}")">Edit</a> |
+			<a href="@($"teacher-disciplines/details?teacher={item.teacher}&discipline={item.discipline}")">Details</a> |
+			<a href="@($"teacher-disciplines/delete?teacher={item.teacher}&discipline={item.discipline}")">Delete</a>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+<Paginator State="pagination" />
+
+@code {
+	private MyAcademyContext context = default!;
+	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+	// Поисковая строка приходит из адреса страницы: /teacher-disciplines?nameFilter=...
+	[SupplyParameterFromQuery]
+	string? NameFilter { get; set; }
+
+	// Пустой фильтр = показываем все записи.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => NameFilter ?? string.Empty;
+
+	private int teacherFilter { get; set; }
+	private int disciplineFilter { get; set; }
+
+	IQueryable<TeacherDisciplineRelation> FilteredTeachersDisciplinesRelation =>
+		BuildQuery();
+
+	private IQueryable<TeacherDisciplineRelation> BuildQuery()
+	{
+		IQueryable<TeacherDisciplineRelation> q = context.TeachersDisciplinesRelation
+			.Include(x => x.Teacher)
+			.Include(x => x.Discipline);
+
+		var f = Filter;
+		if (!string.IsNullOrEmpty(f))
+		{
+			q = q.Where(x =>
+				x.Teacher != null && (x.Teacher.last_name ?? string.Empty).Contains(f) ||
+				x.Discipline != null && (x.Discipline.discipline_name ?? string.Empty).Contains(f));
+		}
+
+		if (teacherFilter != 0)
+		{
+			q = q.Where(x => x.teacher == teacherFilter);
+		}
+
+		if (disciplineFilter != 0)
+		{
+			q = q.Where(x => x.discipline == disciplineFilter);
+		}
+
+		return q;
+	}
+
+	// Сортировка по связанным полям: TemplateColumn не поддерживает Property,
+	// поэтому передаём GridSort.ByAscending(...)
+	private GridSort<TeacherDisciplineRelation> SortByTeacher { get; } =
+		GridSort<TeacherDisciplineRelation>.ByAscending(x => x.Teacher!.last_name);
+
+	private GridSort<TeacherDisciplineRelation> SortByDiscipline { get; } =
+		GridSort<TeacherDisciplineRelation>.ByAscending(x => x.Discipline!.discipline_name);
+
+	protected override void OnInitialized()
+	{
+		context = DbFactory.CreateDbContext();
+	}
+
+	public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

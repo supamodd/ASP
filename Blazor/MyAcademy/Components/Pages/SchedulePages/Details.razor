@@ -1,0 +1,63 @@
+﻿@page "/schedule/details"
+@using Microsoft.EntityFrameworkCore
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<h2>Schedule</h2>
+<hr />
+@if (lesson is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<dl class="row">
+		<dt class="col-sm-2">lesson_id</dt>
+		<dd class="col-sm-10">@lesson.lesson_id</dd>
+		<dt class="col-sm-2">group</dt>
+		<dd class="col-sm-10">@($"{lesson.Group?.group_name} ({lesson.group})")</dd>
+		<dt class="col-sm-2">discipline</dt>
+		<dd class="col-sm-10">@($"{lesson.Discipline?.discipline_name} ({lesson.discipline})")</dd>
+		<dt class="col-sm-2">teacher</dt>
+		<dd class="col-sm-10">@($"{lesson.Teacher?.last_name} ({lesson.teacher})")</dd>
+		<dt class="col-sm-2">date</dt>
+		<dd class="col-sm-10">@lesson.date</dd>
+		<dt class="col-sm-2">time</dt>
+		<dd class="col-sm-10">@lesson.time</dd>
+		<dt class="col-sm-2">spent</dt>
+		<dd class="col-sm-10">@lesson.spent</dd>
+	</dl>
+
+}
+
+<div>
+	<a href="@($"/schedule/edit?lesson_id={lesson.lesson_id}")">Edit</a> |
+	<a href="/schedule">Back to List</a>
+</div>
+
+@code {
+	private Schedule? lesson;
+
+	[SupplyParameterFromQuery]
+	private long lesson_id { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var context = DbFactory.CreateDbContext();
+		lesson ??= await context.Schedule
+			.Include(x => x.Group)
+			.Include(x => x.Discipline)
+			.Include(x => x.Teacher)
+			.FirstOrDefaultAsync(m => m.lesson_id == lesson_id);
+
+		if (lesson is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+}
