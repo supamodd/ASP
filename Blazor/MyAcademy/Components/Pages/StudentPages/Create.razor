@@ -1,7 +1,7 @@
 ﻿@page "/students/create"
 @using Microsoft.EntityFrameworkCore
-@using Academy.Models
-@inject IDbContextFactory<Academy.Data.AcademyContext> DbFactory
+@using MyAcademy.Models
+@inject IDbContextFactory<MyAcademy.Data.MyAcademyContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
@@ -60,7 +60,7 @@
 				<span class="text-danger">*</span>
 				<label for="group" class="form-label">group:</label>
 				<InputSelect id="group" @bind-Value="Student.group" class="form-select">
-					@using (Academy.Data.AcademyContext context = DbFactory.CreateDbContext())
+					@using (MyAcademy.Data.MyAcademyContext context = DbFactory.CreateDbContext())
 					{
 						@foreach (var item in context.Groups)
 						{

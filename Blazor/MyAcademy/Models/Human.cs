@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Academy.Models
+namespace MyAcademy.Models
 {
 	public class Human
 	{

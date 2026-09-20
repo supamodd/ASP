@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>Academy</RootNamespace>
-    <AssemblyName>Academy</AssemblyName>
+    <RootNamespace>MyAcademy</RootNamespace>
+    <AssemblyName>MyAcademy</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

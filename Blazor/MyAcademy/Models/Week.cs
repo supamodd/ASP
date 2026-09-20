@@ -1,4 +1,4 @@
-﻿namespace Academy.Models
+﻿namespace MyAcademy.Models
 {
 	public static class Week
 	{
