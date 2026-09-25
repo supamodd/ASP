@@ -2,7 +2,21 @@
 {
 	display:flex;
 	justify-content:space-between;
-	align-content:center;
+	align-items:center;
+	gap:12px;
+	flex-wrap:wrap;
+}
+
+.search-form
+{
+	display:flex;
+	align-items:center;
+	gap:6px;
+}
+
+.search-form input[type="search"]
+{
+	min-width:220px;
 }
 
 ::deep .movie-title

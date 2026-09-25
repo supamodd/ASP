@@ -16,16 +16,24 @@
 	<p>
 		<a href="movies/create">Create New</a>
 	</p>
-	<select @bind="pagination.ItemsPerPage">
-		<option value="3">3</option>
-		<option value="5">5</option>
-		<option value="8">8</option>
-		<option value="10">10</option>
-	</select>
+	<form action="/movies" class="search-form">
+		<input type="search" name="titleFilter" value="@TitleFilter" placeholder="Search by title or genre" />
+		<input type="submit" value="Search" class="btn btn-primary" />
+		<a href="movies" class="btn btn-secondary">Reset</a>
+	</form>
+	<div>
+		<label for="items-per-page">Rows: </label>
+		<select @bind="pagination.ItemsPerPage" id="items-per-page">
+			<option value="3">3</option>
+			<option value="5">5</option>
+			<option value="8">8</option>
+			<option value="10">10</option>
+		</select>
+	</div>
 </div>
 
 <div>
-	<QuickGrid Class="table" Items="context.Movie" Pagination="pagination">
+	<QuickGrid Class="table" Items="FilteredMovies" Pagination="pagination">
 		@* <PropertyColumn Property="movie => movie.Title" /> *@
 		<TemplateColumn Title="Title"
 						Class="movie-title"
@@ -34,7 +42,7 @@
 			<a href="@($"movies/details?id={context.Id}")">@context.Title</a>
 		</TemplateColumn>
 		<PropertyColumn Property="movie => movie.ReleaseDate" Sortable="true" />
-		<PropertyColumn Property="movie => movie.Genre" />
+		<PropertyColumn Property="movie => movie.Genre" Sortable="true" />
 
 		@*  <TemplateColumn Context="movie">
 		<a href="@($"movies/details?id={movie.Id}")">Details</a>
@@ -49,10 +57,22 @@
 
 	PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
 
-    protected override void OnInitialized()
-    {
-        context = DbFactory.CreateDbContext();
-    }
+	// Поисковая строка приходит из адреса страницы: /movies?titleFilter=...
+	[SupplyParameterFromQuery]
+	string? TitleFilter { get; set; }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+	// Пустой фильтр = показываем все фильмы.
+	// Регистр не важен: на SQL Server сравнение идёт по сортировке БД (CI).
+	private string Filter => TitleFilter ?? string.Empty;
+
+	// Ищем по названию фильма и по жанру
+	IQueryable<Movie> FilteredMovies =>
+		context.Movie.Where(m => m.Title.Contains(Filter) || m.Genre.Contains(Filter));
+
+	protected override void OnInitialized()
+	{
+		context = DbFactory.CreateDbContext();
+	}
+
+	public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
