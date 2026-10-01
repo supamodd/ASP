@@ -1,4 +1,4 @@
-﻿namespace Academy.Components.Pages.GroupPages
+namespace Academy.Components.Pages.GroupPages
 {
 	public class Week
 	{

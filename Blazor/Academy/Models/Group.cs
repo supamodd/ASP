@@ -6,6 +6,8 @@ namespace Academy.Models
 	public class Group
 	{
 		[Key]
+		// group_id в БД не IDENTITY - значение вводим вручную
+		[DatabaseGenerated(DatabaseGeneratedOption.None)]
 		public int group_id { get; set; }
 
 		[Required]
