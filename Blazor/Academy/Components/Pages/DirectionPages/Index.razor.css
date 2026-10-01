@@ -1,0 +1,15 @@
+﻿.controls
+{
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+}
+::deep .title
+{
+	width:50%;
+}
+/*::deep .table*/
+.grid-container
+{
+	height:58vh;
+}

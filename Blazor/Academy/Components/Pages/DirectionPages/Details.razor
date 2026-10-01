@@ -1,0 +1,61 @@
+﻿@page "/directions/details"
+@using Microsoft.EntityFrameworkCore
+@using Academy.Models
+@inject IDbContextFactory<Academy.Data.AcademyContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Directions</PageTitle>
+
+@* <h1>Details</h1> *@
+
+<div>
+	@* <h2>Direction</h2> *@
+	@* <hr /> *@
+	@if (direction is null)
+	{
+		<p><em>Loading...</em></p>
+	}
+	else {
+		<div class="controls">
+			<h1>@direction.direction_name</h1>
+			<p>
+				<a href="@($"/directions/edit?direction_id={direction.direction_id}")" class="btn btn-primary">Edit</a>
+			</p>
+		</div>
+		<hr />
+		<dl class="row">
+			<dt class="col-sm-2">Количество групп:</dt>
+			<dd class="col-sm-10">@direction.Groups.Count</dd>
+		</dl>
+		<div>
+			<a href="@($"/directions")">Back to List</a>
+		</div>
+		<hr />
+		<ul>
+			@foreach (Group group in direction.Groups)
+			{
+				<li>
+					<a href="@($"/groups/details?group_id={group.group_id}")">@group.group_name</a>
+				</li>
+			}
+		</ul>
+    }
+</div>
+
+@code {
+    private Direction? direction;
+
+    [SupplyParameterFromQuery]
+    private int direction_id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        direction = await context.Directions.Include(d => d.Groups).FirstOrDefaultAsync(m => m.direction_id == direction_id);
+
+        if (direction is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
