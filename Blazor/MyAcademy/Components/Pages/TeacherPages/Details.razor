@@ -46,6 +46,36 @@ else
 			<div class="photo-empty">no photo</div>
 		}
 	</div>
+
+	<h3>Disciplines <span class="count">(@disciplines.Count)</span></h3>
+	@if (disciplines.Count == 0)
+	{
+		<p><em>Преподаватель пока не ведёт ни одной дисциплины.</em></p>
+	}
+	else
+	{
+		<table class="table related-table">
+			<thead>
+				<tr>
+					<th>discipline_id</th>
+					<th>discipline_name</th>
+					<th>number_of_lessons</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var discipline in disciplines)
+				{
+					<tr>
+						<td>@discipline.discipline_id</td>
+						<td>@discipline.discipline_name</td>
+						<td>@discipline.number_of_lessons</td>
+						<td><a href="@($"/disciplines/details?discipline_id={discipline.discipline_id}")">Details</a></td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
 }
 
 <div>
@@ -56,17 +86,29 @@ else
 @code {
 	private Teacher? teacher;
 
+	// Дисциплины, которые ведёт преподаватель (связь многие-ко-многим через TeachersDisciplinesRelation).
+	private List<Discipline> disciplines = new();
+
 	[SupplyParameterFromQuery]
 	private int teacher_id { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
 		using var context = DbFactory.CreateDbContext();
-		teacher = await context.Teachers.FirstOrDefaultAsync(m => m.teacher_id == teacher_id);
+		teacher = await context.Teachers.AsNoTracking().FirstOrDefaultAsync(m => m.teacher_id == teacher_id);
 
 		if (teacher is null)
 		{
 			NavigationManager.NavigateTo("notfound");
+			return;
 		}
+
+		// Идём по связи: teacher -> TeachersDisciplinesRelation -> Discipline
+		disciplines = await context.TeachersDisciplinesRelation
+			.AsNoTracking()
+			.Where(r => r.teacher == teacher_id)
+			.Select(r => r.Discipline!)
+			.OrderBy(d => d.discipline_name)
+			.ToListAsync();
 	}
 }
